@@ -4,12 +4,12 @@
         @csrf
     </form>
     <div class="pagetitle">
-        <h1>Profile</h1>
+        <h1>Profil</h1>
         <nav>
             <ol class="breadcrumb">
-                <li class="breadcrumb-item"><a href="index.html">Home</a></li>
-                <li class="breadcrumb-item">Users</li>
-                <li class="breadcrumb-item active">Profile</li>
+                <li class="breadcrumb-item"><a href="index.html">Accueil</a></li>
+                <li class="breadcrumb-item">Utilisateurs</li>
+                <li class="breadcrumb-item active">Profil</li>
             </ol>
         </nav>
     </div><!-- End Page Title -->
@@ -36,7 +36,27 @@
             </div>
 
             <div class="col-xl-8">
+                <div class="flex items-center gap-4">
+                    {{-- <x-primary-button>{{ __('Sauvegarder') }}</x-primary-button> --}}
 
+                    @if (session('status') === 'profile-updated')
+                        <p data="{ show: true }" show="show" transition init="setTimeout(() => show = false, 2000)"
+                            class="text-sm text-gray-600 dark:text-gray-400">{{ __('Enregistré.') }}</p>
+                    @endif
+                </div>
+                <div class="flex items-center gap-4">
+                    {{-- <x-primary-button>{{ __('Save') }}</x-primary-button> --}}
+        
+                    @if (session('status') === 'password-updated')
+                        <p
+                            x-data="{ show: true }"
+                            x-show="show"
+                            x-transition
+                            x-init="setTimeout(() => show = false, 2000)"
+                            class="text-sm text-gray-600 dark:text-gray-400"
+                        >{{ __('Enregistré.') }}</p>
+                    @endif
+                </div>
                 <div class="card">
                     <div class="card-body pt-3">
                         <!-- Bordered Tabs -->
@@ -51,29 +71,26 @@
                                 <button class="nav-link" data-bs-toggle="tab" data-bs-target="#profile-edit">Editer</button>
                             </li>
 
-                            <li class="nav-item">
+                           {{--  <li class="nav-item">
                                 <button class="nav-link" data-bs-toggle="tab"
                                     data-bs-target="#profile-settings">Paramètres</button>
-                            </li>
+                            </li> --}}
 
                             <li class="nav-item">
                                 <button class="nav-link" data-bs-toggle="tab"
                                     data-bs-target="#profile-change-password">Changer le mot de passe</button>
                             </li>
 
-                            <li class="nav-item">
+                          {{--   <li class="nav-item">
                                 <button class="nav-link" data-bs-toggle="tab" data-bs-target="#compte-deleted">Supprimer
                                     compte</button>
-                            </li>
+                            </li> --}}
 
                         </ul>
                         <div class="tab-content pt-2">
-
                             <div class="tab-pane fade show active profile-overview" id="profile-overview">
-                                <h5 class="card-title">About</h5>
-                                <p class="small fst-italic">Sunt est soluta temporibus accusantium neque nam maiores cumque
-                                    temporibus. Tempora libero non est unde veniam est qui dolor. Ut sunt iure rerum quae
-                                    quisquam autem eveniet perspiciatis odit. Fuga sequi sed ea saepe at unde.</p>
+                                <h5 class="card-title">À propos</h5>
+                                <p class="small fst-italic">Description du profil</p>
 
                                 <h5 class="card-title">Détail du profils</h5>
 
@@ -116,11 +133,17 @@
 
                             <div class="tab-pane fade profile-edit pt-3" id="profile-edit">
 
+                                <form id="send-verification" method="post" action="{{ route('verification.send') }}">
+                                    @csrf
+                                </form>
                                 <!-- Profile Edit Form -->
-                                <form>
+
+                                <form method="post" action="{{ route('profile.update') }}">
+                                    @csrf
+                                    @method('patch')
                                     <div class="row mb-3">
-                                        <label for="profileImage" class="col-md-4 col-lg-3 col-form-label">Profile
-                                            Image</label>
+                                        <label for="profileImage" class="col-md-4 col-lg-3 col-form-label">Image de
+                                            profil</label>
                                         <div class="col-md-8 col-lg-9">
                                             <img src="assets/img/profile-img.jpg" alt="Profile">
                                             <div class="pt-2">
@@ -143,9 +166,9 @@
                                     </div>
 
                                     <div class="row mb-3">
-                                        <label for="about" class="col-md-4 col-lg-3 col-form-label">About</label>
+                                        <label for="about" class="col-md-4 col-lg-3 col-form-label">À propos</label>
                                         <div class="col-md-8 col-lg-9">
-                                            <textarea name="about" class="form-control" id="about" style="height: 100px">Sunt est soluta temporibus accusantium neque nam maiores cumque temporibus. Tempora libero non est unde veniam est qui dolor. Ut sunt iure rerum quae quisquam autem eveniet perspiciatis odit. Fuga sequi sed ea saepe at unde.</textarea>
+                                            <textarea name="about" class="form-control" id="about" style="height: 100px">Texte de modification de la description du profil</textarea>
                                         </div>
                                     </div>
 
@@ -235,8 +258,28 @@
                                     </div>
 
                                     <div class="text-center">
-                                        <button type="submit" class="btn btn-primary">Save Changes</button>
+                                        <button type="submit" class="btn btn-primary">Sauvegarder les
+                                            modifications</button>
                                     </div>
+                                    @if ($user instanceof \Illuminate\Contracts\Auth\MustVerifyEmail && !$user->hasVerifiedEmail())
+                                        <div>
+                                            <p class="text-sm mt-2 text-gray-800 dark:text-gray-200">
+                                                {{ __('Votre adresse e-mail n\'est pas vérifiée.') }}
+
+                                                <button form="send-verification"
+                                                    class="underline text-sm text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-100 rounded-md focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 dark:focus:ring-offset-gray-800">
+                                                    {{ __('Cliquez ici pour renvoyer l\'e-mail de vérification.') }}
+                                                </button>
+                                            </p>
+
+                                            @if (session('status') === 'verification-link-sent')
+                                                <p class="mt-2 font-medium text-sm text-green-600 dark:text-green-400">
+                                                    {{ __('Un nouveau lien de vérification a été envoyé à votre adresse e-mail.') }}
+                                                </p>
+                                            @endif
+                                        </div>
+                                    @endif
+
                                 </form><!-- End Profile Edit Form -->
 
                             </div>
@@ -287,37 +330,59 @@
 
                             <div class="tab-pane fade pt-3" id="profile-change-password">
                                 <!-- Change Password Form -->
-                                <form>
-
+                                <form method="post" action="{{ route('password.update') }}">
+                                    @csrf
+                                    @method('put')
                                     <div class="row mb-3">
-                                        <label for="currentPassword" class="col-md-4 col-lg-3 col-form-label">Mot de passe
-                                            actuel</label>
+                                        <label for="update_password_current_password" class="col-md-4 col-lg-3 col-form-label">Mot de passe actuel</label>
                                         <div class="col-md-8 col-lg-9">
-                                            <input name="password" type="password" class="form-control"
-                                                id="currentPassword">
+                                            <input name="current_password" type="password" class="form-control"
+                                                id="update_password_current_password" required placeholder="Votre mot de passe actuel" autocomplete="current-password">
+                                                <x-input-error :messages="$errors->updatePassword->get('current_password')" class="mt-2" />
                                         </div>
                                     </div>
 
                                     <div class="row mb-3">
-                                        <label for="newPassword" class="col-md-4 col-lg-3 col-form-label">nouveau mot de
-                                            passe</label>
+                                        <label for="update_password_password" class="col-md-4 col-lg-3 col-form-label">Nouveau</label>
                                         <div class="col-md-8 col-lg-9">
-                                            <input name="newpassword" type="password" class="form-control"
-                                                id="newPassword">
+                                           {{--  <input name="newpassword" type="password" class="form-control"
+                                                id="newPassword"> --}}
+
+                                                <input type="password" name="password"
+                                                class="form-control @error('password') is-invalid @enderror"
+                                                id="update_password_password" required placeholder="Votre nouveau mot de passe"
+                                                value="{{ old('password') }}" autocomplete="password">
+                                            <div class="invalid-feedback">
+                                                @error('password')
+                                                    {{ $message }}
+                                                @enderror
+                                            </div>
                                         </div>
                                     </div>
 
                                     <div class="row mb-3">
-                                        <label for="renewPassword" class="col-md-4 col-lg-3 col-form-label">Confirmez le
-                                            nouveau mot de passe</label>
+                                        <label for="update_password_password_confirmation" class="col-md-4 col-lg-3 col-form-label">Confirmez</label>
                                         <div class="col-md-8 col-lg-9">
-                                            <input name="renewpassword" type="password" class="form-control"
-                                                id="renewPassword">
+                                            {{-- <input name="renewpassword" type="password" class="form-control"
+                                                id="renewPassword"> --}}
+
+                                                
+                                            <input type="password" name="password_confirmation"
+                                            class="form-control @error('password_confirmation') is-invalid @enderror"
+                                            id="update_password_password_confirmation" required
+                                            placeholder="Confimez votre nouveau mot de passe"
+                                            value="{{ old('password_confirmation') }}"
+                                            autocomplete="password_confirmation">
+                                        <div class="invalid-feedback">
+                                            @error('password_confirmation')
+                                                {{ $message }}
+                                            @enderror
+                                        </div>
                                         </div>
                                     </div>
 
                                     <div class="text-center">
-                                        <button type="submit" class="btn btn-primary">Change Password</button>
+                                        <button type="submit" class="btn btn-primary">Changer le mot de passe</button>
                                     </div>
                                 </form><!-- End Change Password Form -->
 
@@ -326,56 +391,61 @@
                             <div class="tab-pane fade pt-3" id="compte-deleted">
                                 <!-- Compte Deleted -->
                                 <section class="space-y-6">
-                                    <form>
-                                        <header>
+                                    <header>
+                                        <h2 class="text-lg font-medium text-gray-900 dark:text-gray-100">
+                                            {{ __('Delete Account') }}
+                                        </h2>
+                                
+                                        <p class="mt-1 text-sm text-gray-600 dark:text-gray-400">
+                                            {{ __('Once your account is deleted, all of its resources and data will be permanently deleted. Before deleting your account, please download any data or information that you wish to retain.') }}
+                                        </p>
+                                    </header>
+                                
+                                    <x-danger-button
+                                        x-data=""
+                                        x-on:click.prevent="$dispatch('open-modal', 'confirm-user-deletion')"
+                                    >{{ __('Delete Account') }}</x-danger-button>
+                                
+                                    <x-modal name="confirm-user-deletion" :show="$errors->userDeletion->isNotEmpty()" focusable>
+                                        <form method="post" action="{{ route('profile.destroy') }}" class="p-6">
+                                            @csrf
+                                            @method('delete')
+                                
                                             <h2 class="text-lg font-medium text-gray-900 dark:text-gray-100">
-                                                {{ __('Delete Account') }}
+                                                {{ __('Are you sure you want to delete your account?') }}
                                             </h2>
-
+                                
                                             <p class="mt-1 text-sm text-gray-600 dark:text-gray-400">
-                                                {{ __('Once your account is deleted, all of its resources and data will be permanently deleted. Before deleting your account, please download any data or information that you wish to retain.') }}
+                                                {{ __('Once your account is deleted, all of its resources and data will be permanently deleted. Please enter your password to confirm you would like to permanently delete your account.') }}
                                             </p>
-                                        </header>
-
-                                        <x-danger-button x-data=""
-                                            x-on:click.prevent="$dispatch('open-modal', 'confirm-user-deletion')">{{ __('Delete Account') }}</x-danger-button>
-                                        <x-modal name="confirm-user-deletion" :show="$errors->userDeletion->isNotEmpty()" focusable>
-                                            <form method="post" action="{{ route('profile.destroy') }}" class="p-6">
-                                                @csrf
-                                                @method('delete')
-
-                                                <h2 class="text-lg font-medium text-gray-900 dark:text-gray-100">
-                                                    {{ __('Are you sure you want to delete your account?') }}
-                                                </h2>
-
-                                                <p class="mt-1 text-sm text-gray-600 dark:text-gray-400">
-                                                    {{ __('Once your account is deleted, all of its resources and data will be permanently deleted. Please enter your password to confirm you would like to permanently delete your account.') }}
-                                                </p>
-
-                                                <div class="mt-6">
-                                                    <x-input-label for="password" value="{{ __('Password') }}"
-                                                        class="sr-only" />
-
-                                                    <x-text-input id="password" name="password" type="password"
-                                                        class="mt-1 block w-3/4" placeholder="{{ __('Password') }}" />
-
-                                                    <x-input-error :messages="$errors->userDeletion->get('password')" class="mt-2" />
-                                                </div>
-
-                                                <div class="mt-6 flex justify-end">
-                                                    <x-secondary-button x-on:click="$dispatch('close')">
-                                                        {{ __('Cancel') }}
-                                                    </x-secondary-button>
-
-                                                    <x-danger-button class="ms-3">
-                                                        {{ __('Delete Account') }}
-                                                    </x-danger-button>
-                                                </div>
-                                            </form>
-                                        </x-modal>
-                                    </form><!-- End Compte Deleted -->
-
+                                
+                                            <div class="mt-6">
+                                                <x-input-label for="password" value="{{ __('Password') }}" class="sr-only" />
+                                
+                                                <x-text-input
+                                                    id="password"
+                                                    name="password"
+                                                    type="password"
+                                                    class="mt-1 block w-3/4"
+                                                    placeholder="{{ __('Password') }}"
+                                                />
+                                
+                                                <x-input-error :messages="$errors->userDeletion->get('password')" class="mt-2" />
+                                            </div>
+                                
+                                            <div class="mt-6 flex justify-end">
+                                                <x-secondary-button x-on:click="$dispatch('close')">
+                                                    {{ __('Cancel') }}
+                                                </x-secondary-button>
+                                
+                                                <x-danger-button class="ms-3">
+                                                    {{ __('Delete Account') }}
+                                                </x-danger-button>
+                                            </div>
+                                        </form>
+                                    </x-modal>
                                 </section>
+                                
                             </div>
 
                         </div><!-- End Bordered Tabs -->
